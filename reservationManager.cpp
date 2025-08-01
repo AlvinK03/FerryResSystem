@@ -366,6 +366,23 @@ void deleteReservations(char sailingID[])
     }
     reservationClose();
 }
+
+int viewReservations(char sailingID[]) 
+{
+    reservationReset();
+    Reservation r;
+    int count = 0;
+    while (getNextReservation(r)) 
+    {
+        if (strncmp(r.sailingID, sailingID, sizeof(r.sailingID)) == 0) 
+        {
+            count++;
+        }
+    }
+
+    return count;
+}
+
 // Function checkIn() sets the status of specified reservation as checked in
 //----------------------------------------------------------------
 float checkIn(char sailingID[], char vehicleLicence[])
