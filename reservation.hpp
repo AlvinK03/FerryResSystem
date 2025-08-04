@@ -1,11 +1,8 @@
- //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //============================================================
 //============================================================
 /*
 * Filename: reservation.hpp
-*
-* Revision History:
-* Rev. 1 - 25/07/23 Original by A. Chung
 *
 * Description: Header file of the Reservation module of the Ferry Reservation System,
 * checks if information already exists for reservation and in some cases
@@ -34,7 +31,6 @@ using std::string;
 //----------------------------------------------------------------
 struct Reservation
 {
-
 char sailingID[9]; // 9 digit sailing id
 char vehicleLicence[10]; // Unique vehicle licence, consisting of 6-10 characters
 bool onBoard; // Specifies if a reservation has checked in
@@ -57,12 +53,12 @@ void reservationReset();
 // Returns a boolean if the data is successfully read
 // Throws an exception if there is an error with reading the files
 //----------------------------------------------------------------
-bool getNextReservation(Reservation r);
+bool getNextReservation(Reservation& r);
 
 // Function writeReservation writes to reservation file
 // Throws an exception if it fails
 //----------------------------------------------------------------
-void writeReservation(const Reservation& r);
+void writeReservation(const Reservation& r, bool overWrite);
 
 
 // Function closes reservation file

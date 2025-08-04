@@ -6,6 +6,7 @@
 *
 * Revision History:
 * Rev. 1 - 25/07/20 Original by L. Xu
+* Rev. 2 - 25/08/03 Fixed eof handling by L. Xu
 *
 * Description: Implementation file of the Vehicle module of the Ferry
 * Reservation System, being the only module able
@@ -75,11 +76,11 @@ void vehicleReset()
     if (!vehicleFile.is_open())
     {
         // Throw an exception if the file could not be opened
-        throw std::runtime_error("File " + VEHICLEFILENAME + "is not open.");
+        throw std::runtime_error("File " + VEHICLEFILENAME + " is not open.");
     }
     vehicleFile.clear();
     vehicleFile.seekg(0, std::ios::beg); // Set get position to the start of the file
-    vehicleFile.seekp(0, std::ios::beg); // Set put position to the start of the file
+    
 }
 
 // Function getNextVehicle binary reads a line from the Vehicle file
@@ -92,9 +93,10 @@ bool getNextVehicle(Vehicle& v)
     if (!vehicleFile.is_open())
     {
         // Throw an exception if the file is not open
-        throw std::runtime_error("File " + VEHICLEFILENAME + "is not open.");
+        throw std::runtime_error("File " + VEHICLEFILENAME + " is not open.");
     }
 
+    vehicleFile.clear();
     // Read information of the next vehicle object in the file
     vehicleFile.read(reinterpret_cast<char *>(&v), sizeof(Vehicle));
 
@@ -103,6 +105,8 @@ bool getNextVehicle(Vehicle& v)
         // Return false if there is no more data to read
         return false;
     }
+
+    vehicleFile.flush();
 
     if (!vehicleFile)
     {
@@ -123,7 +127,7 @@ void writeVehicle(const Vehicle& v)
     if (!vehicleFile.is_open())
     {
         // Throw an exception if the file is not open
-        throw std::runtime_error("File " + VEHICLEFILENAME + "is not open.");
+        throw std::runtime_error("File " + VEHICLEFILENAME + " is not open.");
     }
 
     // Write information of the vehicle object at the end 
@@ -151,6 +155,6 @@ void vehicleClose()
     else
     {
         // Throw an exception if the file was already closed
-        throw std::runtime_error("File " + VEHICLEFILENAME + "was already closed.");
+        throw std::runtime_error("File " + VEHICLEFILENAME + " was already closed.");
     }
 }

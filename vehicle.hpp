@@ -11,7 +11,6 @@
 * Is a data storage only module
 * Should call the init() function before any
 * operations
-*
 */
 //============================================================
 #pragma once
@@ -22,12 +21,14 @@
 // Struct: Vehicle
 // Purpose: Represents a vehicle with its name, and associated
 // phone number, and length/width measurements
+// It is exported with public access to allow other modules
+// to easily binary read/write fields in the binary data file
 //------------------------------------------------------------
 struct Vehicle
 {
     char vehicleLicence[11];
     // Unique vehicle licence, consisting of 6-10 characters
-    char phone[14]; // Unique phone number
+    char phone[15]; // Unique phone number
     float vehicleHeight; // Vehicle height (meters)
     float vehicleLength; // Vehicle length (meters)
 };
@@ -50,5 +51,6 @@ bool getNextVehicle(Vehicle& v);
 //------------------------------------------------------------
 void writeVehicle(const Vehicle& v);
 // Function close closes the Vehicle file
+// Throws an exception if the file was already closed
 //------------------------------------------------------------
 void vehicleClose();

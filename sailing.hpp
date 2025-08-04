@@ -50,7 +50,7 @@ void writeSailing(const Sailing& s);
 // Function deleteSailing deletes a sailing record with the provided
 // sailingID. Throws an exception if the record is not found.
 //----------------------------------------------------------------
-void deleteSailing(const std::string sailingID);
+void deleteSailing(const char sailingID[]);
 // Function checkSailingExists checks if a sailing with the provided
 // sailingID exists. Returns sailingID, otherwise throws exception.
 //----------------------------------------------------------------

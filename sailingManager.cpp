@@ -173,14 +173,85 @@ void createSailing(char vesselName[])
 {
     // total capacity and if vessel exists and ask user for id
     int vesselLength = getVesselLength(vesselName);
-    std::string id;
-    std::cout << "Enter Sailing ID: ";
-    std::cin >> id;
+    char sailingID[10];
+
+    while(true)
+    {
+        std::cout << "Enter the Sailing ID (Format: ttt-dd-hh):\n";
+        cout << "If you like to exit, press 0\n";
+        std::cin >> sailingID;
+        if(strcmp(sailingID, "0") == 0)
+        {
+            return;
+        }
+        // Check length first (should be exactly 9 characters: 3 + 1 + 2 + 1 + 2)
+        if(strlen(sailingID) != 9)
+        {
+            cout << "Error: ID must be exactly 9 characters (Format: ttt-dd-hh)\n";
+
+        }
+        
+        // Check format ttt-dd-hh
+        bool valid = true;
+        
+        // Check first 3 characters are letters
+        for(int i = 0; i < 3; i++)
+        {
+            if(!isalpha(sailingID[i]))
+            {
+                valid = false;
+            }
+        }
+        
+        // Check 4th character is dash
+        if(valid && sailingID[3] != '-')
+        {
+            valid = false;
+        }
+        
+        // Check positions 5-6 are digits (index 4-5)
+        if(valid)
+        {
+            for(int i = 4; i < 6; i++)
+            {
+                if(!isdigit(sailingID[i]))
+                {
+                    valid = false;
+                }
+            }
+        }
+        
+        // Check 7th character is dash
+        if(valid && sailingID[6] != '-')
+        {
+            valid = false;
+        }
+        
+        // Check positions 8-9 are digits (index 7-8)
+        if(valid)
+        {
+            for(int i = 7; i < 9; i++)
+            {
+                if(!isdigit(sailingID[i]))
+                {
+                    valid = false;
+                }
+            }
+        }
+        
+        if(valid)
+        {
+            break; // Valid format
+        } else
+        {
+            cout << "Error: Invalid format. Please use ttt-dd-hh (3 letters, 2 digits, 2 digits)\n";
+        }
+    }
 
     //check uniqueness
     try
     {
-        checkSailingExists(id.c_str());
+        checkSailingExists(sailingID);
         throw std::runtime_error("createSailing: ID already exists.");
     }
     catch (const std::runtime_error&){                                          // ?
@@ -189,13 +260,13 @@ void createSailing(char vesselName[])
     // build record name length lrl hrl
     Sailing s{};
     std::strncpy(s.vesselName, vesselName, sizeof(s.vesselName)-1);
-    std::strncpy(s.sailingID, id.c_str(), sizeof(s.sailingID)-1);
+    std::strncpy(s.sailingID, sailingID, sizeof(s.sailingID)-1);
     s.lowRemainingLength = static_cast<float>(vesselLength);
     s.highRemainingLength = 0.0f;
 
     //call write sailing
     writeSailing(s);
-    std::cout << "Created sailing " << id << " on vessel " << vesselName << ".\n";
+    std::cout << "Created sailing " << sailingID << " on vessel " << vesselName << ".\n";
 }
 
 // Function updateSailing updates the total space available on a sailing

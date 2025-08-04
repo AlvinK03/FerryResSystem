@@ -5,6 +5,7 @@
  * Filename: Sailing.cpp
  * Revision History:
  * Rev. 1 - 25/07/23 Original by C. Wen
+ * Rev. 2 - 25/08/04 Fixed coding convention by L. Xu
  *
  * Description: Implementation file of the sailing moduel of the Ferry
  * Reservation System, being the only module able
@@ -35,8 +36,12 @@
 	#include <unistd.h>  
 	#include <fcntl.h>
 #endif
+
+//============================================================
+// Module scope static variables
+//------------------------------------------------------------
 static std::fstream sailingFile;
-static const std::string sailingFileName = "sailings.dat";
+static const std::string SAILINGFILENAME = "sailings.dat";
 
 //================================================================
 
@@ -46,26 +51,26 @@ static const std::string sailingFileName = "sailings.dat";
 void sailingOpen()
 {
 	// Try to open the sailing file without overwriting the contents
-	sailingFile.open(sailingFileName, std::ios::in | std::ios::out | std::ios::binary);
+	sailingFile.open(SAILINGFILENAME, std::ios::in | std::ios::out | std::ios::binary);
 	if (!sailingFile.is_open())
 	{
 		// Try to create a sailing file if it does not exist
 		sailingFile.clear();
-		sailingFile.open(sailingFileName, std::ios::out | std::ios::binary);
+		sailingFile.open(SAILINGFILENAME, std::ios::out | std::ios::binary);
 		
 		if (!sailingFile.is_open())
 		{
 			// Throw an exception if the file cannot be created
-			throw std::runtime_error("Cannot create " + sailingFileName);
+			throw std::runtime_error("Cannot create " + SAILINGFILENAME);
 		}
 		sailingFile.close();
 
 		// Try to now re-open the file for reading and writing
-		sailingFile.open(sailingFileName, std::ios::in | std::ios::out | std::ios::binary);
+		sailingFile.open(SAILINGFILENAME, std::ios::in | std::ios::out | std::ios::binary);
 		if (!sailingFile.is_open())
 		{
 			// Throw an exception if the file cannot be opened
-			throw std::runtime_error("Cannot open " + sailingFileName);
+			throw std::runtime_error("Cannot open " + SAILINGFILENAME);
 		} 
 	}
 }
@@ -74,11 +79,15 @@ void sailingOpen()
 //----------------------------------------------------------------
 void sailingClose()
 {
-	if (!sailingFile.is_open())
-	{
-		throw std::runtime_error("Close: " + sailingFileName + " File not open.");
-	}
-	sailingFile.close();
+	if (sailingFile.is_open())
+    {
+        sailingFile.close();
+    }
+    else
+    {
+        // Throw an exception if the file was already closed
+        throw std::runtime_error("File " + SAILINGFILENAME + " was already closed.");
+    }
 }
 
 // Function reset seeks to the beginning of the Sailing file
@@ -88,11 +97,10 @@ void sailingReset()
 {
 	if (!sailingFile.is_open())
 	{
-		throw std::runtime_error("Reset: " + sailingFileName + " File not open.");
+		throw std::runtime_error("Reset: " + SAILINGFILENAME + " File not open.");
 	}
 	sailingFile.clear();
 	sailingFile.seekg(0, std::ios::beg); // Set get position to the start of the file
-	sailingFile.seekp(0, std::ios::beg); // Set put position to the start of the file
 }
 
 // Function getNextSailing obtains a line from the Sailing file
@@ -105,6 +113,9 @@ bool getNextSailing(Sailing& s)
 	{
 		throw std::runtime_error("getNextSailing: File not open.");
 	}
+
+    sailingFile.clear();
+    // Read information of the next sailing object in the file
 	sailingFile.read(reinterpret_cast<char*>(&s), sizeof(Sailing));
 	if (static_cast<std::size_t>(sailingFile.gcount()) < sizeof(Sailing))
 	{
@@ -112,6 +123,14 @@ bool getNextSailing(Sailing& s)
 		sailingFile.clear();
 		return false;
 	}
+
+    sailingFile.flush();
+
+    if (!sailingFile)
+    {
+        // Throw an exception if the file could not be read from
+        throw std::runtime_error("Error reading from file " + SAILINGFILENAME + ".");
+    }
 	return true;
 }
 
@@ -122,8 +141,12 @@ void writeSailing(const Sailing& s)
 {
 	if (!sailingFile.is_open())
 	{
+        // Throw an exception if the file is not open
 		throw std::runtime_error("writeSailing: File not open.");
 	}
+
+    // Write information of the sailing object
+    sailingFile.clear();
 	sailingFile.write(reinterpret_cast<const char*>(&s), sizeof(Sailing));
 	if (sailingFile.fail() || sailingFile.bad())
 	{
@@ -140,9 +163,10 @@ int checkSailingExists(const char sailingID[])
 	sailingReset();
 	Sailing temp;
 	int index = 0;
+    // Check all the records and return the index of the sailing
 	while (getNextSailing(temp))
 	{
-		if (std::strncmp(temp.sailingID,sailingID,sizeof(temp.sailingID)) == 0)
+		if (std::strncmp(temp.sailingID, sailingID, sizeof(temp.sailingID)) == 0)
 		{
 			return index;
 		}
@@ -158,6 +182,7 @@ void deleteSailing(const char sailingID[])
 {
 	if (!sailingFile.is_open())
 	{
+        // Throw an exception if the file is not open
 		throw std::runtime_error("deleteSailing: File not open.");
 	}
 	//total record
@@ -167,14 +192,16 @@ void deleteSailing(const char sailingID[])
 	int total = static_cast<int>(size / sizeof(Sailing));
 	if (total == 0)
 	{
+        // Throw an exception if the file is empty
 		throw std::runtime_error("deleteSailing: No records to delete");
 	}
 
-	// FInd target index
+	// Find target index
 	sailingFile.seekg(0, std::ios::beg);
 	int target = -1;
 	Sailing temp;
 	Sailing lastRecord;
+    // Find the sailing with the sailingID
 	for (int i = 0; i < total; ++i)
 	{
 		sailingFile.read(reinterpret_cast<char*>(&temp), sizeof(Sailing));
@@ -189,6 +216,7 @@ void deleteSailing(const char sailingID[])
 
 	if (target < 0)
 	{
+        // Throw an exception if the sailing was not found
 		throw std::runtime_error(std::string("deleteSailing: '") + sailingID + "' not found");
 	}
 
@@ -214,7 +242,7 @@ void deleteSailing(const char sailingID[])
         sailingFile.close();
 
         // open FILE*
-        FILE* f = std::fopen(sailingFileName.c_str(), "r+b");
+        FILE* f = std::fopen(SAILINGFILENAME.c_str(), "r+b");
         if (!f)
 		{
             throw std::runtime_error("deleteSailing: fopen failed");
@@ -230,7 +258,7 @@ void deleteSailing(const char sailingID[])
         }
         std::fclose(f);
 
-        sailingFile.open(sailingFileName, std::ios::in | std::ios::out | std::ios::binary);
+        sailingFile.open(SAILINGFILENAME, std::ios::in | std::ios::out | std::ios::binary);
         if (!sailingFile.is_open()) 
 		{
             throw std::runtime_error("deleteSailing: re-open failed");
@@ -242,7 +270,7 @@ void deleteSailing(const char sailingID[])
         sailingFile.close();
 
         // open file descriptor 
-        int fd = ::open(sailingFileName.c_str(), O_RDWR);
+        int fd = ::open(SAILINGFILENAME.c_str(), O_RDWR);
         if (fd < 0)
 		{
             throw std::runtime_error("deleteSailing: open failed");
@@ -257,7 +285,7 @@ void deleteSailing(const char sailingID[])
         }
         close(fd);
 
-        sailingFile.open(sailingFileName, std::ios::in | std::ios::out | std::ios::binary);
+        sailingFile.open(SAILINGFILENAME, std::ios::in | std::ios::out | std::ios::binary);
         if (!sailingFile.is_open())
 		{
             throw std::runtime_error("deleteSailing: re-open failed");

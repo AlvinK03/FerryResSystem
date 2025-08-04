@@ -37,6 +37,7 @@ void vehicleCheck(char vehicleLicence[]);
 // with the corresponding licence plate on the specified sailing
 //----------------------------------------------------------------
 void createReservation(char sailingID[], char vehicleLicence[]);
+void createReservationRepeat(char input);
 // Function deleteReservations with parameters sailingID, vehicleLicence
 // deletes a reservation on the specified sailing
 // for the vehicle with the corresponding licence plate
