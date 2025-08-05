@@ -178,8 +178,8 @@ void processInput()
             {
                 if(strncmp(s.sailingID, sailingID, sizeof(s.sailingID)) == 0)
                 {
-                    cout << "Remaining low lane space: " << s.lowRemainingLength << endl;
-                    cout << "Remaining high lane space: " << s.highRemainingLength << endl;
+                    cout << "Remaining low lane space: " << s.lowRemainingLength << "m" << endl;
+                    cout << "Remaining high lane space: " << s.highRemainingLength << "m" << endl;
                     foundSailing = true;
                     break;
                 }
@@ -189,7 +189,7 @@ void processInput()
                 cout << "SailingID does not exist" << endl;
                 break;
             }
-            std::cout << "Please enter the vehicle's licence plate" << std::endl;
+            std::cout << "Please enter the vehicle's licence plate (Length: 10 char max.)" << std::endl;
             while(true)
             {
                 std::cin >> vehicleLicence;

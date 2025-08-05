@@ -59,9 +59,9 @@ int main() {
     // Open reservation file
     reservationOpen();
     // Write test reservations to file
-    writeReservation(r);
-    writeReservation(r2);
-    writeReservation(r3);
+    writeReservation(r,false);
+    writeReservation(r2,false);
+    writeReservation(r3,false);
 
     // Test 1: Delete reservation r2
     std::cout << "\n=== Testing deletion of reservation 2 ===\n";

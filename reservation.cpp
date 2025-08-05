@@ -6,7 +6,7 @@
 *
 * Revision History:
 * Rev. 2 - 25/08/04 Modified by L. Xu
-*        - Fixed deleteReservation to properly overwrite 
+*        - Fixed deleteReservation to properly overwrite
 * Rev. 1 - 25/07/23 Original by A. Chung
 *
 * Description: Implementation module of the Ferry Reservation System,
@@ -53,7 +53,7 @@ static const std::string RESERVATIONFILENAME = "reservations.dat";
 void reservationOpen()
 {
 
-    // Try to open the reservation file without overwriting the contents
+     // Try to open the reservation file without overwriting the contents
     reservationFile.open(RESERVATIONFILENAME, std::ios::in | std::ios::out | std::ios::binary);
     if (!reservationFile.is_open())
     {
@@ -132,7 +132,7 @@ bool getNextReservation(Reservation& r)
 void writeReservation(const Reservation& r, bool overWrite)
 {
     //throw exception if file not opened
-    if (!reservationFile.is_open())
+   if (!reservationFile.is_open())
     {
         // Throw an exception if the file is not open
         throw std::runtime_error("File " + RESERVATIONFILENAME + " is not open.");
@@ -142,7 +142,8 @@ void writeReservation(const Reservation& r, bool overWrite)
 
     // Write to the end if not overwriting, skip if overwriting
     if (!overWrite)
-    { 
+    {
+        
         reservationFile.seekp(0, std::ios::end); // Move to the end of the file
     }
     reservationFile.write(reinterpret_cast<const char *>(&r), sizeof(Reservation));
@@ -159,7 +160,8 @@ void writeReservation(const Reservation& r, bool overWrite)
 //----------------------------------------------------------------
 void reservationClose()
 {
-    if (reservationFile.is_open())
+
+     if (reservationFile.is_open())
     {
         reservationFile.close();
     }
@@ -175,6 +177,7 @@ void reservationClose()
 //----------------------------------------------------------------
 void deleteReservation(char sailingID[], char vehicleLicence[])
 {
+
     // Throw an exception if the file is not open
     if (!reservationFile.is_open()) 
     {
@@ -201,7 +204,8 @@ void deleteReservation(char sailingID[], char vehicleLicence[])
     
     // Find the reservation with the correct sailingID and vehicleLicence
     for (int i = 0; i < total; ++i) 
-    { 
+    {
+        
         getNextReservation(temp);
         if (std::strncmp(temp.sailingID, sailingID, sizeof(temp.sailingID)) == 0 &&
             std::strncmp(temp.vehicleLicence, vehicleLicence, sizeof(temp.vehicleLicence)) == 0) 
@@ -224,6 +228,7 @@ void deleteReservation(char sailingID[], char vehicleLicence[])
     getNextReservation(lastRecord);
     if (reservationFile.fail()) 
     {
+        // Throw an exception if it failed
         throw std::runtime_error("deleteReservation: Failed reading last record");
     }
     
@@ -240,8 +245,9 @@ void deleteReservation(char sailingID[], char vehicleLicence[])
     Vehicle v;
     sailingReset();
     vehicleReset();
-    while (true)
-    {
+
+    // Find the correct sailing and return the vehicle length back to its lane
+    while (true){
         if (!getNextSailing(s))
         {
             throw std::runtime_error("Failed getting sailing");
@@ -252,6 +258,7 @@ void deleteReservation(char sailingID[], char vehicleLicence[])
             {
                 if (!getNextVehicle(v))
                 {
+                    // Throw an exception if the vehicle is not found
                     throw std::runtime_error("Failed getting vehicle information for cancellation");
                 }
                 if (std::strcmp(v.vehicleLicence, vehicleLicence) == 0)
@@ -259,13 +266,14 @@ void deleteReservation(char sailingID[], char vehicleLicence[])
                     break;
                 }
             }
-            
+            // Return to low lane length
             if (temp.isLRL)
             {
                 deleteSailing(s.sailingID);
                 s.lowRemainingLength += v.vehicleLength;
                 writeSailing(s);
             }
+            // Return to high lane length
             else
             {
                 deleteSailing(s.sailingID);
@@ -320,8 +328,7 @@ void deleteReservation(char sailingID[], char vehicleLicence[])
     // Reopen file
     reservationFile.open(RESERVATIONFILENAME,
                        std::ios::in | std::ios::out | std::ios::binary);
-    if (!reservationFile.is_open()) 
-    {
+    if (!reservationFile.is_open()) {
         throw std::runtime_error("deleteReservation: re-open failed");
     }
 }
