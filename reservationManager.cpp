@@ -5,6 +5,9 @@
 * Filename: reservationManager.cpp
 *
 * Revision History:
+* Rev. 2 - 25/08/04 Modified by A. Kong
+*        - Implemented helper function createResAtCheckin
+*        - Fixed bugs in Checkin function causing incorrect fare calculations
 * Rev. 1 - 25/07/23 Original by A. Chung
 *
 * Description: Implementation file of the Reservation module of the Ferry

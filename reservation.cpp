@@ -5,7 +5,8 @@
 * Filename: reservation.cpp
 *
 * Revision History:
-* Rev. 2 - 25/08/04 Fixed deleteReservation to properly overwrite by L. Xu
+* Rev. 2 - 25/08/04 Modified by L. Xu
+*        - Fixed deleteReservation to properly overwrite 
 * Rev. 1 - 25/07/23 Original by A. Chung
 *
 * Description: Implementation module of the Ferry Reservation System,
