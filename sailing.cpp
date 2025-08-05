@@ -2,7 +2,7 @@
 //================================================================
 //================================================================
 /*
- * Filename: Sailing.cpp
+ * Filename: sailing.cpp
  * Revision History:
  * Rev. 1 - 25/07/23 Original by C. Wen
  * Rev. 2 - 25/08/04 Fixed coding convention by L. Xu

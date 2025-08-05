@@ -69,5 +69,3 @@ void reservationClose();
 // sailingID and vehicleLicence. Throws an exception if the record is not found.
 //----------------------------------------------------------------
 void deleteReservation(char sailingID[], char vehicleLicence[]);
-
-void truncateFile(int newRecordCount);

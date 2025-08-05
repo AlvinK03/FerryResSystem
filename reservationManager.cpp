@@ -166,82 +166,97 @@ void vehicleCheck(char vehicleLicence[])
 // Function createReservation creates a reservation for the vehicle
 // with the corresponding licence plate on the specified sailing
 //----------------------------------------------------------------
-void createReservation(char sailingID[], char vehicleLicence[])
-{
-    char phoneNumber[14];
+void createReservation(char sailingID[], char vehicleLicence[]){
+    char phoneNumber[15];
     float vehicleLength = 0.0f, vehicleHeight = 0.0f;
     Vehicle v;
     vehicleReset();
-
-    while(getNextVehicle(v))
+    bool vehExists = false;
+    while (getNextVehicle(v))
     {
-        if(v.vehicleLicence == vehicleLicence)
-        {
+        if (std::strncmp(v.vehicleLicence, vehicleLicence, sizeof(v.vehicleLicence)) == 0){
             //new reservation
             Reservation newRes;
+            vehicleLength = v.vehicleLength;
+            vehicleHeight = v.vehicleHeight;
+            strncpy(phoneNumber, v.phone, sizeof(phoneNumber) - 1);
+            phoneNumber[sizeof(phoneNumber) - 1] = '\0';
             strncpy(newRes.sailingID, sailingID, sizeof(newRes.sailingID) - 1);
             newRes.sailingID[sizeof(newRes.sailingID) - 1] = '\0'; 
             strncpy(newRes.vehicleLicence, vehicleLicence, sizeof(newRes.vehicleLicence) - 1);
             newRes.vehicleLicence[sizeof(newRes.vehicleLicence) - 1] = '\0';  
             newRes.onBoard = false;
-            newRes.isLRL = (vehicleHeight > 2 || vehicleLength > 7);
+            newRes.isLRL = (v.vehicleHeight > 2 || v.vehicleLength > 7);
             // Add to file
             writeReservation(newRes, false);
             cout << "Vehicle verified\n";
             cout << "Previous Vehicle found\n";
             cout << "Reservation Complete\n";
             char input;
-            cout << "Enter Y to add another vehicle, enter N to return to main menu\n";
+            cout << "Enter Y to add another vehicle, enter N to return to the main menu\n";
             std::cin >> input;
             createReservationRepeat(input);
-            return;  
+            vehExists = true;  
         }
     }
-    cout << "Vehicle verified\n";
+    if (!vehExists)
+    {
+        cout << "Vehicle verified\n";
 
-    while(true)
-    {
-        cout << "Enter the customer phone number (Length: 14 char max.):\n";
-        std::cin >> phoneNumber;
-        if (strlen(vehicleLicence) > 14)
+        Vehicle temp;
+        strncpy(temp.vehicleLicence, vehicleLicence, sizeof(temp.vehicleLicence) - 1);
+        temp.vehicleLicence[sizeof(temp.vehicleLicence) - 1] = '\0';
+        while(true)
         {
-            std::cout << "Error: phone number is invalid (Length: 14 char max.)\n";
+            cout << "Enter the customer phone number (Length: 14 char max.):\n";
+            std::cin >> phoneNumber;
+            
+            if (strlen(phoneNumber) > 14)
+            {
+                std::cout << "Error: phone number is invalid (Length: 14 char max.)\n";
+            }
+            else
+            {
+                break;
+            }
         }
-        else
+        strncpy(temp.phone, phoneNumber, sizeof(temp.phone) - 1);
+        temp.phone[sizeof(temp.phone) - 1] = '\0';
+        cout << "Customer verified\n";
+        while(true)
         {
-            break;
-        }
-    }
-    cout << "Customer verified\n";
-    while(true)
-    {
-        cout << "Enter the length of the vehicle in meters (Range: 0.1-99.9 max):\n";
-        std::cin >> vehicleLength;
-        if (vehicleLength < 0.1 || vehicleLength > 99.9)
-        {
-            std::cout << "Error: vehicle length is invalid (Range: 0.1-99.9 max)\n";
-        }
-        else
-        {
-            break;
-        }
-    }
-    cout << "Valid length\n";
-    while(true)
-    {
-    cout << "Enter the height of the vehicle in meters (Range: 0.1-9.9m max):\n";
-    std::cin >> vehicleHeight;
-        if (vehicleHeight < 0.1 || vehicleHeight > 9.9)
-        {
-            std::cout << "Error: vehicle height is invalid (Range: 0.1-9.9m max)\n";
-        }
-        else
-        {
-            break;
-        }
-    }
-    cout << "Valid height\n";  
+            cout << "Enter the length of the vehicle in meters (Range: 0.1-99.9 max):\n";
+            std::cin >> vehicleLength;
 
+            if (vehicleLength < 0.1 || vehicleLength > 99.9)
+            {
+                std::cout << "Error: vehicle length is invalid (Range: 0.1-99.9 max)\n";
+            }
+            else
+            {
+                break;
+            }
+        }
+        temp.vehicleLength = vehicleLength;
+        cout << "Valid length\n";
+        while(true)
+        {
+        cout << "Enter the height of the vehicle in meters (Range: 0.1-9.9m max):\n";
+        std::cin >> vehicleHeight;
+            if (vehicleHeight < 0.1 || vehicleHeight > 9.9)
+            {
+                std::cout << "Error: vehicle height is invalid (Range: 0.1-9.9m max)\n";
+            }
+            else
+            {
+                break;
+            }
+        }
+        temp.vehicleHeight = vehicleHeight;
+        cout << "Valid height\n";  
+        
+        writeVehicle(temp);
+    }
     sailingReset(); // Start from beginning of sailing file
     Sailing s;
     bool sailingFound = false;
@@ -279,20 +294,20 @@ void createReservation(char sailingID[], char vehicleLicence[])
     for (auto& updatedSailing : sailings) {
         writeSailing(updatedSailing);
     }
-    Reservation newRes = {};  // Zero-initialize ALL fields
-
-    // Safe string copying with explicit null termination
-    strncpy(newRes.sailingID, sailingID, 9);
-    newRes.sailingID[10] = '\0';  // Force null terminator
-
-    strncpy(newRes.vehicleLicence, vehicleLicence, 10);
-    newRes.vehicleLicence[11] = '\0';
-
+    if (vehExists)
+    {
+        return;
+    }
+    // Create new reservation 
+    Reservation newRes;
+    strncpy(newRes.sailingID, sailingID, sizeof(newRes.sailingID) - 1);
+    newRes.sailingID[sizeof(newRes.sailingID) - 1] = '\0'; 
+    strncpy(newRes.vehicleLicence, vehicleLicence, sizeof(newRes.vehicleLicence) - 1);
+    newRes.vehicleLicence[sizeof(newRes.vehicleLicence) - 1] = '\0';  
     newRes.onBoard = false;
     newRes.isLRL = (vehicleHeight > 2 || vehicleLength > 7);
-
-    // Create new vehicle
-    Vehicle newVeh = {}; // Zero-initialize
+    //Create new vehicle
+    Vehicle newVeh;
     strncpy(newVeh.vehicleLicence, vehicleLicence, sizeof(newVeh.vehicleLicence) - 1);
     newVeh.vehicleLicence[sizeof(newVeh.vehicleLicence) - 1] = '\0';
     strncpy(newVeh.phone, phoneNumber, sizeof(newVeh.phone) - 1);
@@ -301,7 +316,7 @@ void createReservation(char sailingID[], char vehicleLicence[])
     newVeh.vehicleHeight = vehicleHeight;
     //write vehicle
     writeReservation(newRes, false);
-    writeVehicle(newVeh);
+    writeVehicle(v);
     cout << "Reservation Complete\n";
     char input;
     cout << "Enter Y to add another vehicle, enter N to return to the main menu\n";
@@ -400,18 +415,16 @@ void createReservationRepeat(char input)
             else
             break;
         }
-        createReservation(sailingID, vehicleLicence);
+            createReservation(sailingID, vehicleLicence);
     }   
     else if(input == 'N')
-    {
         return;
-    }
-    else
-    {
+    else{
         throw std::out_of_range("Input was neither Y or N.");
         return;
     }
 }
+
 // Function createResAtCheckin creates a reservation for a vehicle at checkin,
 // assuming that the vehicle doesn't yet have a reservation at the time of checkin
 void createResAtCheckin(char sailingID[], char vehicleLicence[])
@@ -551,7 +564,7 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
 // for the vehicle with the corresponding licence plate
 //----------------------------------------------------------------
 void deleteReservations(char sailingID[], char vehicleLicence[])
-{
+{   
     deleteReservation(sailingID, vehicleLicence);
 }
 // Function deleteReservations with single parameter sailingID
@@ -559,6 +572,7 @@ void deleteReservations(char sailingID[], char vehicleLicence[])
 //----------------------------------------------------------------
 void deleteReservations(char sailingID[])
 {
+    
     std::vector<Reservation> all;
     reservationReset();
     Reservation r;
@@ -589,15 +603,15 @@ void deleteReservations(char sailingID[])
     {
         throw std::runtime_error(std::string("Reservation: ") + sailingID + " not found.");
     }
-
+    
     // Recreate the file with only non-matching reservations
-    std::remove("reservation.dat");
+    std::remove("reservations.dat");
     reservationOpen();
     for (auto& rec : remaining)
     {
         writeReservation(rec, true);
     }
-    reservationClose();
+    
 }
 int viewReservations(char sailingID[]) {
 
@@ -627,14 +641,21 @@ float checkIn(char sailingID[], char vehicleLicence[])
             r.onBoard = true;
             break;
         }
-        // create a reservation for customer if reservation not found
-        else if (!getNextReservation(r))
+    }
+    // create a reservation for customer if a reservation does not exist
+    if (!getNextReservation(r))
+    {
+        createResAtCheckin(sailingID,vehicleLicence);
+    }
+    reservationReset();
+    while (getNextReservation(r))
+    {
+        if (strcmp(r.sailingID, sailingID) == 0 && strcmp(r.vehicleLicence, vehicleLicence) == 0)
         {
-            createReservation(sailingID,vehicleLicence);
+            r.onBoard = true;
             break;
         }
     }
-
     if (r.isLRL == true)
     {
         fare = 14;

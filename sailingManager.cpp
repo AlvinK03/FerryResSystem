@@ -24,7 +24,6 @@
 #include "vessel.hpp"            
 #include "sailing.hpp"
 #include "reservationManager.hpp"
-#include "reservation.hpp"
 #include <vector>
 #include <string>
 #include <cstring>              
@@ -176,7 +175,8 @@ void accessReservationManager(char sailingID[])
 void createSailing(char vesselName[])
 {
     // total capacity and if vessel exists and ask user for id
-
+    
+    
     char sailingID[10];
 
     while(true)
@@ -269,7 +269,8 @@ void createSailing(char vesselName[])
         checkSailingExists(sailingID);
         throw std::runtime_error("createSailing: ID already exists.");
     }
-    catch (const std::runtime_error&){
+    catch (const std::runtime_error&)
+    {                                         
     }
 
     // build record name length lrl hrl
@@ -390,7 +391,8 @@ char* querySailing()
 void removeReservations(char sailingID[])
 {
     deleteReservations(sailingID);
-    std::cout << "Removed all reservation on " << sailingID <<".\n";
+    deleteSailing(sailingID);
+    std::cout<<"Removed all reservations on "<< sailingID <<".\n";
 } 
 
 // Function printSailingReport sends a sailing report to a printer to be printed
@@ -398,10 +400,8 @@ void printSailingReport(char printerName[])
 {
     Sailing tempSailing;
     Vessel tempVessel;
-    Reservation tempRes;
     sailingReset();
     vesselReset();
-    reservationReset();
     std::time_t now = std::time(nullptr);
     std::tm* local_time = std::localtime(&now);
     char date_str[9];
@@ -411,7 +411,7 @@ void printSailingReport(char printerName[])
     std::cout << std::left 
               << std::setw(12) << "Sailing ID"
               << std::setw(28) << "Vessel Name"
-              << std::setw(10) << "LRL(m)"  
+              << std::setw(10) << "LRL(m)"
               << std::setw(10) << "HRL(m)"
               << std::setw(12) << "#Vehicles"
               << std::setw(12) << "LenFull(%)" << std::endl;
@@ -421,13 +421,13 @@ void printSailingReport(char printerName[])
         // calculate the percent of the total lane length full
         float vesselTtlLen = (float)getVesselLength(tempSailing.vesselName);
         float vesselTtlRmngLen = tempSailing.lowRemainingLength + tempSailing.highRemainingLength;
-        float percentLenFull = vesselTtlRmngLen/vesselTtlLen;
+        float percentLenFull = (vesselTtlRmngLen/vesselTtlLen) * 100;
         std::cout << std::left << std::fixed << std::setprecision(1)
             << std::setw(12) << tempSailing.sailingID 
             << std::setw(28) << tempSailing.vesselName
             << std::setw(10) << tempSailing.lowRemainingLength 
             << std::setw(10) << tempSailing.highRemainingLength
-            << std::setw(12) << "#Vehicles"
+            << std::setw(12) << viewReservations(tempSailing.sailingID)
             << std::setw(12) << percentLenFull;
     }
 }
