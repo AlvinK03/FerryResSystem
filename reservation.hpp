@@ -31,10 +31,10 @@ using std::string;
 //----------------------------------------------------------------
 struct Reservation
 {
-char sailingID[9]; // 9 digit sailing id
-char vehicleLicence[10]; // Unique vehicle licence, consisting of 6-10 characters
-bool onBoard; // Specifies if a reservation has checked in
-bool isLRL; // Specifies which section of the sailing the vehicle is to be parked
+    char sailingID[10]; // 9 digit sailing id
+    char vehicleLicence[11]; // Unique vehicle licence, consisting of 6-10 characters
+    bool onBoard; // Specifies if a reservation has checked in
+    bool isLRL; // Specifies which section of the sailing the vehicle is to be parked
 };
 
 //================================================================
@@ -69,3 +69,5 @@ void reservationClose();
 // sailingID and vehicleLicence. Throws an exception if the record is not found.
 //----------------------------------------------------------------
 void deleteReservation(char sailingID[], char vehicleLicence[]);
+
+void truncateFile(int newRecordCount);

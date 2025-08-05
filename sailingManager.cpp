@@ -24,6 +24,7 @@
 #include "vessel.hpp"            
 #include "sailing.hpp"
 #include "reservationManager.hpp"
+#include "reservation.hpp"
 #include <vector>
 #include <string>
 #include <cstring>              
@@ -33,6 +34,9 @@
 #include <cstdio> 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
 
 //================================================================
 
@@ -172,7 +176,7 @@ void accessReservationManager(char sailingID[])
 void createSailing(char vesselName[])
 {
     // total capacity and if vessel exists and ask user for id
-    int vesselLength = getVesselLength(vesselName);
+
     char sailingID[10];
 
     while(true)
@@ -248,21 +252,32 @@ void createSailing(char vesselName[])
         }
     }
 
+    Vessel temp;
+    vesselReset();
+    // Find the correct vessel record
+    while (true)
+    {
+        getNextVessel(temp);
+        if (std::strcmp(temp.name, vesselName) == 0)
+        {
+            break;
+        }
+    }
     //check uniqueness
     try
     {
         checkSailingExists(sailingID);
         throw std::runtime_error("createSailing: ID already exists.");
     }
-    catch (const std::runtime_error&){                                          // ?
+    catch (const std::runtime_error&){
     }
 
     // build record name length lrl hrl
-    Sailing s{};
-    std::strncpy(s.vesselName, vesselName, sizeof(s.vesselName)-1);
-    std::strncpy(s.sailingID, sailingID, sizeof(s.sailingID)-1);
-    s.lowRemainingLength = static_cast<float>(vesselLength);
-    s.highRemainingLength = 0.0f;
+    Sailing s;
+    std::strncpy(s.vesselName, vesselName, sizeof(s.vesselName) - 1);
+    std::strncpy(s.sailingID, sailingID, sizeof(s.sailingID) - 1);
+    s.lowRemainingLength = temp.LCLL;
+    s.highRemainingLength = temp.HCLL;
 
     //call write sailing
     writeSailing(s);
@@ -345,7 +360,7 @@ char* querySailing()
         std::cout << ids.size() << ") "
                         << s.sailingID << " on " << s.vesselName
                         << "  LRL=" << s.lowRemainingLength
-                        << "  HRL=" << s.lowRemainingLength << "\n";
+                        << "  HRL=" << s.highRemainingLength << "\n";
     }
     if (ids.empty())
     {
@@ -375,11 +390,44 @@ char* querySailing()
 void removeReservations(char sailingID[])
 {
     deleteReservations(sailingID);
-    std::cout<<"Removed all reservation on "<< sailingID <<".\n";
+    std::cout << "Removed all reservation on " << sailingID <<".\n";
 } 
 
 // Function printSailingReport sends a sailing report to a printer to be printed
 void printSailingReport(char printerName[])
 {
-    std::cout<<"Printing report to "<<printerName<<"...\n";
+    Sailing tempSailing;
+    Vessel tempVessel;
+    Reservation tempRes;
+    sailingReset();
+    vesselReset();
+    reservationReset();
+    std::time_t now = std::time(nullptr);
+    std::tm* local_time = std::localtime(&now);
+    char date_str[9];
+    std::strftime(date_str, sizeof(date_str), "%y/%m/%d", local_time);
+    std::cout << "Printing report to " << printerName <<"...\n" << endl;
+    std::cout << "Date of Sailing Report Request: " << date_str << std::endl;
+    std::cout << std::left 
+              << std::setw(12) << "Sailing ID"
+              << std::setw(28) << "Vessel Name"
+              << std::setw(10) << "LRL(m)"  
+              << std::setw(10) << "HRL(m)"
+              << std::setw(12) << "#Vehicles"
+              << std::setw(12) << "LenFull(%)" << std::endl;
+    // print a line for every sailing
+    while (getNextSailing(tempSailing))
+    {
+        // calculate the percent of the total lane length full
+        float vesselTtlLen = (float)getVesselLength(tempSailing.vesselName);
+        float vesselTtlRmngLen = tempSailing.lowRemainingLength + tempSailing.highRemainingLength;
+        float percentLenFull = vesselTtlRmngLen/vesselTtlLen;
+        std::cout << std::left << std::fixed << std::setprecision(1)
+            << std::setw(12) << tempSailing.sailingID 
+            << std::setw(28) << tempSailing.vesselName
+            << std::setw(10) << tempSailing.lowRemainingLength 
+            << std::setw(10) << tempSailing.highRemainingLength
+            << std::setw(12) << "#Vehicles"
+            << std::setw(12) << percentLenFull;
+    }
 }

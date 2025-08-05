@@ -42,10 +42,16 @@ void createVessel()
     Vessel userVessel;
     std::cout << "Please enter a valid vessel name (max 20 char.)" << std::endl;
     cin >> userVessel.name;
+    cin.clear();
+    cin.ignore(10000,'\n');
     std::cout << "Please enter the low ceiling lane length of the vessel" << std::endl;
     cin >> userVessel.LCLL;
+    cin.clear();
+    cin.ignore(10000,'\n');
     std::cout << "Please enter the high ceiling lane length of the vessel" << std::endl;
     cin >> userVessel.HCLL;
+    cin.clear();
+    cin.ignore(10000,'\n');
     writeVessel(userVessel);
 }
 
@@ -55,7 +61,7 @@ void processInput()
 {
     // variable initialization
     int userInput;
-    char* printerName;
+    char printerName[30];
     char sailingID[10];
     char vehicleLicence[11];
     char vesselName[26];
@@ -94,108 +100,111 @@ void processInput()
         // create a reservation
         case 1:
         {
-    while(true)
-    {
-        cout << "Enter the Sailing ID (Format: ttt-dd-hh):\n";
-        cout << "If you like to exit, press 0\n";
-        std::cin >> sailingID;
-        if(strcmp(sailingID, "0") == 0){
-            return;
-        }
-                // Check format ttt-dd-hh
-        bool valid = true;
-        // Check length first (should be exactly 9 characters: 3 + 1 + 2 + 1 + 2)
-        if(strlen(sailingID) != 9)
-        {
-            cout << "Error: ID must be exactly 9 characters (Format: ttt-dd-hh)\n";
-            valid = false;
-        }
-        // Check first 3 characters are letters
-        for(int i = 0; i < 3; i++)
-        {
-            if(!isalpha(sailingID[i]))
+            while(true)
             {
-                valid = false;
-            }
-        }
-        
-        // Check 4th character is dash
-        if(valid && sailingID[3] != '-')
-        {
-            valid = false;
-        }
-        
-        // Check positions 5-6 are digits (index 4-5)
-        if(valid)
-        {
-            for(int i = 4; i < 6; i++)
-            {
-                if(!isdigit(sailingID[i]))
+                cout << "Enter the Sailing ID (Format: ttt-dd-hh):\n";
+                cout << "If you'd like to exit, press 0\n";
+                std::cin >> sailingID;
+                if(strcmp(sailingID, "0") == 0)
+                {
+                    return;
+                }
+                    // Check format ttt-dd-hh
+                bool valid = true;
+                // Check length first (should be exactly 9 characters: 3 + 1 + 2 + 1 + 2)
+                if(strlen(sailingID) != 9)
+                {
+                    cout << "Error: ID must be exactly 9 characters (Format: ttt-dd-hh)\n";
+                    valid = false;
+                }
+                // Check first 3 characters are letters
+                for(int i = 0; i < 3; i++)
+                {
+                    if(!isalpha(sailingID[i]))
+                    {
+                        valid = false;
+                    }
+                }
+                
+                // Check 4th character is dash
+                if(valid && sailingID[3] != '-')
                 {
                     valid = false;
                 }
-            }
-        }
-        
-        // Check 7th character is dash
-        if(valid && sailingID[6] != '-')
-        {
-            valid = false;
-        }
-        
-        // Check positions 8-9 are digits (index 7-8)
-        if(valid)
-        {
-            for(int i = 7; i < 9; i++)
-            {
-                if(!isdigit(sailingID[i]))
+                
+                // Check positions 5-6 are digits (index 4-5)
+                if(valid)
+                {
+                    for(int i = 4; i < 6; i++)
+                    {
+                        if(!isdigit(sailingID[i]))
+                        {
+                            valid = false;
+                        }
+                    }
+                }
+                
+                // Check 7th character is dash
+                if(valid && sailingID[6] != '-')
                 {
                     valid = false;
                 }
+                
+                // Check positions 8-9 are digits (index 7-8)
+                if(valid)
+                {
+                    for(int i = 7; i < 9; i++)
+                    {
+                        if(!isdigit(sailingID[i]))
+                        {
+                            valid = false;
+                        }
+                    }
+                }
+                
+                if(valid)
+                {
+                    break; // Valid format
+                } 
+                else
+                {
+                    cout << "Error: Invalid format. Please use ttt-dd-hh (3 letters, 2 digits, 2 digits)\n";
+                }
             }
-        }
-        
-        if(valid)
-        {
-            break; // Valid format
-        } else
-        {
-            cout << "Error: Invalid format. Please use ttt-dd-hh (3 letters, 2 digits, 2 digits)\n";
-        }
-    }
-        Sailing s; 
-        bool foundSailing = false;
-        sailingReset();
-        while(getNextSailing(s))
-        {
-            if(strncmp(s.sailingID, sailingID, sizeof(s.sailingID)) == 0)
+            Sailing s; 
+            bool foundSailing = false;
+            sailingReset();
+            while(getNextSailing(s))
             {
-                cout << "Remaining low lane space: " << s.lowRemainingLength << endl;
-                cout << "Remaining high lane space: " << s.highRemainingLength << endl;
-                foundSailing = true;
+                if(strncmp(s.sailingID, sailingID, sizeof(s.sailingID)) == 0)
+                {
+                    cout << "Remaining low lane space: " << s.lowRemainingLength << endl;
+                    cout << "Remaining high lane space: " << s.highRemainingLength << endl;
+                    foundSailing = true;
+                    break;
+                }
+            }
+            if(!foundSailing)
+            {
+                cout << "SailingID does not exist" << endl;
                 break;
             }
-        }
-        if(!foundSailing)
-        {
-            cout << "SailingID does not exist" << endl;
-            break;
-        }
-        std::cout << "Please enter the vehicle's licence plate" << std::endl;
-        while(true)
-        {
-            std::cin >> vehicleLicence;
-            if (strlen(vehicleLicence) > 10)
-        {   
-            std::cout << "Error: vehicle length is invalid (Length: 10 char max.)\n";
-        }
-            else
-            break;
-        }
+            std::cout << "Please enter the vehicle's licence plate" << std::endl;
+            while(true)
+            {
+                std::cin >> vehicleLicence;
+                if (strlen(vehicleLicence) > 10)
+                {   
+                    std::cout << "Error: vehicle length is invalid (Length: 10 char max.)\n";
+                }
+                else
+                {
+                    break;
+                }
+            }
             createReservation(sailingID, vehicleLicence);
             break;
-        // delete a reservation
-    }
+        }
         case 2:
             std::cout << "Please enter a sailing ID" << std::endl;
             std::cin >> sailingID;
