@@ -40,7 +40,7 @@ void reservation()
 void createVessel()
 {
     Vessel userVessel;
-    std::cout << "Please enter a valid vessel name (max 20 char.)" << std::endl;
+    std::cout << "Please enter a valid vessel name (max 25 char.)" << std::endl;
     cin >> userVessel.name;
     cin.clear();
     cin.ignore(10000,'\n');

@@ -19,6 +19,8 @@
 //============================================================
 // Struct: Vessel
 // Purpose: Represents a vessel with its name, and capacity
+// It is exported with public access to allow other modules
+// to easily binary read/write fields in the binary data file
 //------------------------------------------------------------
 struct Vessel
 {
@@ -27,11 +29,11 @@ struct Vessel
     float LCLL; // Low Ceiling Lane Length (meters)
 };
 //============================================================
-// Function open creates and opens the Vessel file
+// Function vesselOpen creates and opens the Vessel file
 // Throws an exception if the file cannot be opened
 //------------------------------------------------------------
 void vesselOpen();
-// Function reset seeks to the beginning of the Vessel file
+// Function vesselReset seeks to the beginning of the Vessel file
 // Throws an exception if the file is not open
 //------------------------------------------------------------
 void vesselReset();
@@ -44,6 +46,7 @@ bool getNextVessel(Vessel& v);
 // Throws an exception if the write operation fails
 //------------------------------------------------------------
 void writeVessel(const Vessel& v);
-// Function close closes the Vessel file
+// Function vesselClose closes the Vessel file
+// Throws an exception if the file was already closed
 //------------------------------------------------------------
 void vesselClose();

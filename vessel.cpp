@@ -5,6 +5,7 @@
 * Filename: vessel.cpp
 *
 * Revision History:
+* Rev. 2 - 25/08/03 Fixed eof handling by L. Xu
 * Rev. 1 - 25/07/20 Original by L. Xu
 *
 * Description: Implementation file of the Vessel module of the Ferry
@@ -75,11 +76,11 @@ void vesselReset()
     if (!vesselFile.is_open())
     {
         // Throw an exception if the file could not be opened
-        throw std::runtime_error("File " + VESSELFILENAME + "is not open.");
+        throw std::runtime_error("File " + VESSELFILENAME + " is not open.");
     }
     vesselFile.clear();
     vesselFile.seekg(0, std::ios::beg); // Set get position to the start of the file
-    vesselFile.seekp(0, std::ios::beg); // Set put position to the start of the file
+    
 }
 
 // Function getNextVessel binary reads a line from the Vessel file
@@ -92,17 +93,20 @@ bool getNextVessel(Vessel& v)
     if (!vesselFile.is_open())
     {
         // Throw an exception if the file is not open
-        throw std::runtime_error("File " + VESSELFILENAME + "is not open.");
+        throw std::runtime_error("File " + VESSELFILENAME + " is not open.");
     }
 
+    vesselFile.clear();
     // Read information of the next vessel object in the file
-    vesselFile.read(reinterpret_cast < char *> (&v), sizeof(Vessel));
-
+    vesselFile.read(reinterpret_cast<char *>(&v), sizeof(Vessel));
+    
     if (vesselFile.eof())
     {
-        // Return false if there is no more data to read
+        // Return false if there is no more data to read 
         return false;
     }
+
+    vesselFile.flush();
 
     if (!vesselFile)
     {
@@ -123,7 +127,7 @@ void writeVessel(const Vessel& v)
     if (!vesselFile.is_open())
     {
         // Throw an exception if the file is not open
-        throw std::runtime_error("File " + VESSELFILENAME + "is not open.");
+        throw std::runtime_error("File " + VESSELFILENAME + " is not open.");
     }
 
     // Write information of the vessel object at the end 
@@ -151,6 +155,6 @@ void vesselClose()
     else
     {
         // Throw an exception if the file was already closed
-        throw std::runtime_error("File " + VESSELFILENAME + "was already closed.");
+        throw std::runtime_error("File " + VESSELFILENAME + " was already closed.");
     }
 }

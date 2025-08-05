@@ -186,7 +186,7 @@ void createReservation(char sailingID[], char vehicleLicence[]){
             strncpy(newRes.vehicleLicence, vehicleLicence, sizeof(newRes.vehicleLicence) - 1);
             newRes.vehicleLicence[sizeof(newRes.vehicleLicence) - 1] = '\0';  
             newRes.onBoard = false;
-            newRes.isLRL = (v.vehicleHeight > 2 || v.vehicleLength > 7);
+            newRes.isLRL = (v.vehicleHeight <= 2 || v.vehicleLength <= 7);
             // Add to file
             writeReservation(newRes, false);
             cout << "Vehicle verified\n";
@@ -262,21 +262,42 @@ void createReservation(char sailingID[], char vehicleLicence[]){
     bool sailingFound = false;
     std::vector<Sailing> sailings;
 
+    // Create new reservation 
+    Reservation newRes;
+    std::strncpy(newRes.sailingID, sailingID, sizeof(newRes.sailingID) - 1);
+    newRes.sailingID[sizeof(newRes.sailingID) - 1] = '\0'; 
+    std::strncpy(newRes.vehicleLicence, vehicleLicence, sizeof(newRes.vehicleLicence) - 1);
+    newRes.vehicleLicence[sizeof(newRes.vehicleLicence) - 1] = '\0';  
+    newRes.onBoard = false;
+    newRes.isLRL = (vehicleHeight <= 2 && vehicleLength <= 7);
+    
     // Read all sailings into memory
     while (getNextSailing(s)) {
         if (strncmp(s.sailingID, sailingID, sizeof(s.sailingID)) == 0) {
             sailingFound = true;
-            
-            // Check if vehicle fits in low-roof lane
-            if (vehicleLength <= s.lowRemainingLength) {
-                s.lowRemainingLength -= vehicleLength;
-            } 
-            // Check if vehicle fits in high-roof lane
-            else if (vehicleLength <= s.highRemainingLength) {
-                s.highRemainingLength -= vehicleLength;
+            if (newRes.isLRL)
+            {
+                // Check if vehicle fits in low-roof lane
+                if (vehicleLength <= s.lowRemainingLength) {
+                    s.lowRemainingLength -= vehicleLength;
+                } 
+                // Check if vehicle fits in high-roof lane
+                else if (vehicleLength <= s.highRemainingLength) {
+                    s.highRemainingLength -= vehicleLength;
+                }
+                else {
+                    throw std::runtime_error("Insufficient space in both low and high roof lanes");
+                }
             }
-            else {
-                throw std::runtime_error("Insufficient space in both low and high roof lanes");
+            else
+            {
+                if (vehicleLength <= s.highRemainingLength)
+                {
+                    s.highRemainingLength -= vehicleLength;
+                }
+                else {
+                    throw std::runtime_error("Insufficient space in both low and high roof lanes");
+                }
             }
         }
         sailings.push_back(s);
@@ -298,14 +319,7 @@ void createReservation(char sailingID[], char vehicleLicence[]){
     {
         return;
     }
-    // Create new reservation 
-    Reservation newRes;
-    strncpy(newRes.sailingID, sailingID, sizeof(newRes.sailingID) - 1);
-    newRes.sailingID[sizeof(newRes.sailingID) - 1] = '\0'; 
-    strncpy(newRes.vehicleLicence, vehicleLicence, sizeof(newRes.vehicleLicence) - 1);
-    newRes.vehicleLicence[sizeof(newRes.vehicleLicence) - 1] = '\0';  
-    newRes.onBoard = false;
-    newRes.isLRL = (vehicleHeight > 2 || vehicleLength > 7);
+    
     //Create new vehicle
     Vehicle newVeh;
     strncpy(newVeh.vehicleLicence, vehicleLicence, sizeof(newVeh.vehicleLicence) - 1);
@@ -424,7 +438,6 @@ void createReservationRepeat(char input)
         return;
     }
 }
-
 // Function createResAtCheckin creates a reservation for a vehicle at checkin,
 // assuming that the vehicle doesn't yet have a reservation at the time of checkin
 void createResAtCheckin(char sailingID[], char vehicleLicence[])
@@ -445,7 +458,7 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
             strncpy(newRes.vehicleLicence, vehicleLicence, sizeof(newRes.vehicleLicence) - 1);
             newRes.vehicleLicence[sizeof(newRes.vehicleLicence) - 1] = '\0';  
             newRes.onBoard = false;
-            newRes.isLRL = (vehicleHeight > 2 || vehicleLength > 7);
+            newRes.isLRL = (vehicleHeight <= 2 && vehicleLength <= 7);
             // Add to file
             writeReservation(newRes, false);
             cout << "Vehicle verified\n";
@@ -543,7 +556,7 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
     newRes.vehicleLicence[11] = '\0';
 
     newRes.onBoard = true;
-    newRes.isLRL = (vehicleHeight > 2 || vehicleLength > 7);
+    newRes.isLRL = (vehicleHeight <= 2 && vehicleLength <= 7);
 
     // Create new vehicle
     Vehicle newVeh = {}; // Zero-initialize
@@ -558,14 +571,15 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
     writeVehicle(newVeh);
     cout << "Reservation Complete\n";
 }
-
 // Function deleteReservations with parameters sailingID, vehicleLicence
 // deletes a reservation on the specified sailing
 // for the vehicle with the corresponding licence plate
 //----------------------------------------------------------------
 void deleteReservations(char sailingID[], char vehicleLicence[])
-{   
+{
+    
     deleteReservation(sailingID, vehicleLicence);
+
 }
 // Function deleteReservations with single parameter sailingID
 // deletes all reservations on the specified sailing
@@ -601,7 +615,7 @@ void deleteReservations(char sailingID[])
 
     if (!found)
     {
-        throw std::runtime_error(std::string("Reservation: ") + sailingID + " not found.");
+        return;
     }
     
     // Recreate the file with only non-matching reservations
@@ -631,7 +645,7 @@ int viewReservations(char sailingID[]) {
 float checkIn(char sailingID[], char vehicleLicence[])
 {
     float fare = 0;
-    // search file for matching reservation
+    //loops through the file, if it matches, return true, else it will automatically be false
     Reservation r;
     reservationReset();
     while (getNextReservation(r))
@@ -655,13 +669,13 @@ float checkIn(char sailingID[], char vehicleLicence[])
             r.onBoard = true;
             break;
         }
-    }
-    if (r.isLRL == true)
+
+    } 
+    if(r.isLRL == true)
     {
         fare = 14;
         return fare;
     }
-
     else
     {
         // Get vehicle dimensions for non-LRL vehicles
@@ -682,7 +696,7 @@ float checkIn(char sailingID[], char vehicleLicence[])
             std::cout << "Invalid height. Please enter between 2.1 and 9.9 meters: ";
             std::cin >> height;
         }
-            
+        
         // Calculate fare
         fare = (length * 2) + (height * 3);
         return fare;
