@@ -446,7 +446,7 @@ void printSailingInfo(char sailingID[])
         // print more or quit
         if (i > numEntries)
         {
-            cout << std::setw(12) << i << ") Display More" << endl;
+            cout << i << ") Display More" << endl;
             cout << std::setw(12) << "0) Quit" << endl;
             cout << "Select an option [0/" << i << "] and press ENTER:" << endl;
             std::cin >> userInput;
