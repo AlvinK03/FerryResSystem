@@ -79,4 +79,5 @@ char* querySailing();
 void removeReservations(char sailingID[]); 
 
 // Function printSailingReport sends a sailing report to a printer to be printed
+//----------------------------------------------------------------
 void printSailingReport(char printerName[]);

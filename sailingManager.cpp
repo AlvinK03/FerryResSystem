@@ -5,6 +5,12 @@
  * Filename: sailingManager.cpp
  *
  * Revision History:
+ * Rev. 2 - 25/08/04 Modified by L. Xu and A. Kong
+ * - Fixed querySailing()
+ * - Added function for print sailing report
+ * - Fixed print sailing report logic
+ * - Added a helper function for querySailing()
+ * - Fixed high/low lane length logic
  * Rev. 1 - 25/07/23 Original by C. Wen
  *
  * Description: sailingManager.cpp is the control module for
@@ -23,8 +29,6 @@
 #include "sailingManager.hpp"
 #include "vessel.hpp"            
 #include "sailing.hpp"
-#include "vehicle.hpp"
-#include "reservation.hpp"
 #include "reservationManager.hpp"
 #include <vector>
 #include <string>
@@ -37,8 +41,7 @@
 #include <cctype>
 #include <chrono>
 #include <ctime>
-#include <iomanip>
-
+#include <iomanip> 
 //================================================================
 
 // Function getVessel displays all available vessels for sailings
@@ -52,6 +55,7 @@ char* getVessel()
     Vessel vessel;
     std::vector<std::string> names;
     std::cout << "\nVessels:\n";
+    // Get all vessels for sailings
     while (getNextVessel(vessel))
     {
         names.emplace_back(vessel.name);
@@ -101,6 +105,7 @@ char* getVessel()
             int choice = std::stoi(input);
             if (choice == 0)
             {
+                // Throw an exception for cancelled 
                 throw std::runtime_error("getVessel: User cancelled.");
             }
             if (choice == pageSize && end < total)
@@ -141,6 +146,7 @@ int getVesselLength(char vesselName[])
 {
     vesselReset();
     Vessel vessel;
+    // Find the specified vessel and get total lane length
     while (getNextVessel(vessel))
     {
         if (std::strcmp(vesselName, vessel.name) == 0)
@@ -148,6 +154,7 @@ int getVesselLength(char vesselName[])
             return static_cast<int>(vessel.HCLL + vessel.LCLL);
         }
     }
+    // Throw an exception if the vessel was not found
     throw std::runtime_error(std::string("getVesselLength: ") + vesselName + " not found.");
 }
 
@@ -180,7 +187,7 @@ void createSailing(char vesselName[])
     
     
     char sailingID[10];
-
+    
     while(true)
     {
         std::cout << "Enter the Sailing ID (Format: ttt-dd-hh):\n";
@@ -256,7 +263,7 @@ void createSailing(char vesselName[])
 
     Vessel temp;
     vesselReset();
-    // Find the correct vessel record
+    // Find the correct vessel record to be used
     while (true)
     {
         getNextVessel(temp);
@@ -272,7 +279,7 @@ void createSailing(char vesselName[])
         throw std::runtime_error("createSailing: ID already exists.");
     }
     catch (const std::runtime_error&)
-    {                                         
+    {                                          // ?
     }
 
     // build record name length lrl hrl
@@ -304,6 +311,7 @@ void updateSailing(char sailingID[], int vehicleLen)
     {
         if (std::strcmp(rec.sailingID, sailingID)==0)
         {
+            // Check if the sailing has enough low lane space
             if (rec.lowRemainingLength < vehicleLen)
             {
                 throw std::runtime_error("updateSailing: Not enough low lane space.");
@@ -345,119 +353,6 @@ void checkInReservation(char sailingID[], char vehicleLicence[])
     std::cout<<"Reservation checked in.\n";
 }
 
-void printSailingInfo(char sailingID[])
-{
-    Sailing tempSailing;
-    Reservation tempRes;
-    Vehicle tempVehicle;
-    sailingReset();
-    reservationReset();
-    vehicleReset();
-    int numEntries = 5; // default number of reservations to display
-    int i = 1;
-    char isSpecial;
-    char isOnboard;
-    int userInput;
-
-    // search for provided sailing
-    while (getNextSailing(tempSailing))
-    {
-        if (strncmp(tempSailing.sailingID, sailingID, sizeof(tempSailing.sailingID)) == 0)
-        {
-            break;
-        }
-    }
-    cout << "Information about the sailing: " << endl;
-    cout << "\tSailing ID: " << sailingID << endl;
-    cout << "\tLow Remaining Length (LRL): " << tempSailing.lowRemainingLength << "m" << endl;
-    cout << "\tHigh Remaining Length (HRL): " << tempSailing.highRemainingLength << "m" << endl;
-    cout << "\tDay of Departure: " << sailingID[4] << sailingID[5] << endl;
-    cout << "\tHour of Departure: " << sailingID[7] << sailingID[8] << endl;
-    cout << "\tDeparture Terminal: " << sailingID[0] << sailingID[1] << sailingID[2] << endl;
-    cout << "\tVessel Name: " << tempSailing.vesselName << endl << endl;
-    cout << "List of Reservations" << endl;
-    cout << "================" << endl;
-    cout << std::left
-         << std::setw(16) << "  Licence #"
-         << std::setw(18) << "Phone #"
-         << std::setw(12) << "Length(m)"
-         << std::setw(12) << "Special?"
-         << std::setw(12) << "Onboard?" << endl;
-    // keep printing out entries until there are enough    
-    while (i <= numEntries)
-    {
-        // found a reservation with matching sailingID
-        if (strncmp(tempRes.sailingID, sailingID, sizeof(tempRes.sailingID)) == 0)
-        {
-            // search vehicles.dat for relevant vehicle
-            while (getNextVehicle(tempVehicle))
-            {
-                if (strncmp(tempVehicle.vehicleLicence, tempRes.vehicleLicence, sizeof(tempVehicle)) == 0)
-                {
-                    break;
-                }
-            }
-            // check if onboard
-            if (tempRes.isLRL == true)
-            {
-                isSpecial = 'N';
-            }
-            else
-            {
-                isSpecial = 'Y';
-            }
-            // check if special vehicle
-            if (tempRes.onBoard == true)
-            {
-                isOnboard = (char) 'Y';
-            }
-            else
-            {
-                isOnboard = (char) 'N';
-            }
-
-            cout << std::left
-                 << i << ") " 
-                 << std::setw(13) << tempRes.vehicleLicence
-                 << std::setw(18) << tempVehicle.phone
-                 << std::setw(12) << tempVehicle.vehicleLength
-                 << std::setw(12) << isSpecial
-                 << std::setw(12) << isOnboard << endl;
-            i++;
-        }
-        // if there are no more reservations to show for said sailing
-        if (!getNextReservation(tempRes))
-        {
-            cout << "No more reservations to display" << endl;
-            break;
-        }
-        // upon printing numEntries amt of reservations, prompt user to either
-        // print more or quit
-        if (i > numEntries)
-        {
-            cout << std::setw(12) << i << ") Display More" << endl;
-            cout << std::setw(12) << "0) Quit" << endl;
-            cout << "Select an option [0/" << i << "] and press ENTER:" << endl;
-            std::cin >> userInput;
-            if (userInput == i)
-            {
-                numEntries += 5;
-            }
-            else if (userInput == 0)
-            {
-                break;
-            }
-            else
-            {
-                cout << "Please select a valid option" << endl;
-            }
-
-        }
-    }
-    
-
-}
-
 // Function querySailing displays all available sailings,
 // and prompts the user to select a sailing
 // Displays information on the sailing and 
@@ -468,9 +363,9 @@ char* querySailing()
     sailingReset();
     Sailing s;
     std::vector<std::string> ids;
-    static char sailingID[10]; //9 characters for id, 1 buffer
     std::cout<<"\nAvailable sailings:\n";
 
+    // Get the information and print all sailings
     while(getNextSailing(s))
     {
         ids.emplace_back(s.sailingID);
@@ -481,23 +376,24 @@ char* querySailing()
     }
     if (ids.empty())
     {
+        // Throw an exception if there are no sailings
         throw std::runtime_error("querySailing: No available sailings.");
     }
     int userInput = 0;
     while (true)
     {
-        std::cout<< "Select sailing [1-"<<ids.size() << "]" << std::endl;
+        std::cout<<"Select sailing [1-"<<ids.size() << "]";
         if (std::cin >> userInput && userInput>=1 && userInput <= (int)ids.size())
         {
-            strncpy(sailingID, ids[userInput - 1].c_str(), sizeof(sailingID) - 1);
-            sailingID[sizeof(sailingID) - 1] = '\0';
-            printSailingInfo(sailingID);
             break;
         }
         std::cout << "Invalid. Try again.\n";
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
     }
+    static char sailingID[10]; //9 characters for id, 1 buffer
+    strncpy(sailingID, ids[userInput - 1].c_str(), sizeof(sailingID) - 1);
+    sailingID[sizeof(sailingID) - 1] = '\0';
     return sailingID;
 }
 
@@ -506,12 +402,14 @@ char* querySailing()
 //----------------------------------------------------------------
 void removeReservations(char sailingID[])
 {
+    
     deleteReservations(sailingID);
     deleteSailing(sailingID);
     std::cout<<"Removed all reservations on "<< sailingID <<".\n";
 } 
 
 // Function printSailingReport sends a sailing report to a printer to be printed
+//----------------------------------------------------------------
 void printSailingReport(char printerName[])
 {
     Sailing tempSailing;
@@ -544,6 +442,6 @@ void printSailingReport(char printerName[])
             << std::setw(10) << tempSailing.lowRemainingLength 
             << std::setw(10) << tempSailing.highRemainingLength
             << std::setw(12) << viewReservations(tempSailing.sailingID)
-            << std::setw(12) << percentLenFull << std:: endl;
-    }
+            << std::setw(12) << percentLenFull << std::endl;
+    } 
 }

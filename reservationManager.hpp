@@ -4,9 +4,6 @@
 /*
 * Filename: reservationManager.hpp
 *
-* Revision History:
-* Rev. 1 - 25/07/23 Original by A. Chung
-*
 * Description: Header file for the reservationManager moduleof the Reservation
 * module of the FerryReservation System, being the module that
 * manages sailing, vehicle, and reservation module functions

@@ -4,8 +4,9 @@
 /*
  * Filename: sailing.cpp
  * Revision History:
+ * Rev. 2 - 25/08/04 Modified by L. Xu
+ * 		  - Fixed eof handling
  * Rev. 1 - 25/07/23 Original by C. Wen
- * Rev. 2 - 25/08/04 Fixed coding convention by L. Xu
  *
  * Description: Implementation file of the sailing moduel of the Ferry
  * Reservation System, being the only module able

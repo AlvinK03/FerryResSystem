@@ -5,9 +5,14 @@
 * Filename: reservationManager.cpp
 *
 * Revision History:
-* Rev. 2 - 25/08/04 Modified by A. Kong
-*        - Implemented helper function createResAtCheckin
-*        - Fixed bugs in Checkin function causing incorrect fare calculations
+* Rev. 3 - 25/08/04 Modified bt A. Kong
+*        - Fixed the Checkin function
+*        - Implemented a helper function createResAtCheckin
+* Rev. 2 - 25/08/04 Modified by L. Xu
+*        - Fixed the deletion of reservations
+*        - Fixed retained vehicle data
+*        - Fixed isLRL logic
+*        - Fixed reservation logic
 * Rev. 1 - 25/07/23 Original by A. Chung
 *
 * Description: Implementation file of the Reservation module of the Ferry
@@ -175,6 +180,7 @@ void createReservation(char sailingID[], char vehicleLicence[]){
     Vehicle v;
     vehicleReset();
     bool vehExists = false;
+    // Check if the vehicle data already exists
     while (getNextVehicle(v))
     {
         if (std::strncmp(v.vehicleLicence, vehicleLicence, sizeof(v.vehicleLicence)) == 0){
@@ -202,6 +208,7 @@ void createReservation(char sailingID[], char vehicleLicence[]){
             vehExists = true;  
         }
     }
+    // Create a vehicle if not existing
     if (!vehExists)
     {
         cout << "Vehicle verified\n";
@@ -226,6 +233,7 @@ void createReservation(char sailingID[], char vehicleLicence[]){
         strncpy(temp.phone, phoneNumber, sizeof(temp.phone) - 1);
         temp.phone[sizeof(temp.phone) - 1] = '\0';
         cout << "Customer verified\n";
+        // Get vehicle data
         while(true)
         {
             cout << "Enter the length of the vehicle in meters (Range: 0.1-99.9 max):\n";
@@ -242,6 +250,7 @@ void createReservation(char sailingID[], char vehicleLicence[]){
         }
         temp.vehicleLength = vehicleLength;
         cout << "Valid length\n";
+        // Get vehicle data
         while(true)
         {
         cout << "Enter the height of the vehicle in meters (Range: 0.1-9.9m max):\n";
@@ -278,27 +287,33 @@ void createReservation(char sailingID[], char vehicleLicence[]){
     while (getNextSailing(s)) {
         if (strncmp(s.sailingID, sailingID, sizeof(s.sailingID)) == 0) {
             sailingFound = true;
+            // Insert reservation into proper lane
             if (newRes.isLRL)
             {
                 // Check if vehicle fits in low-roof lane
-                if (vehicleLength <= s.lowRemainingLength) {
+                if (vehicleLength <= s.lowRemainingLength) 
+                {
                     s.lowRemainingLength -= vehicleLength;
                 } 
-                // Check if vehicle fits in high-roof lane
-                else if (vehicleLength <= s.highRemainingLength) {
+                // Check if vehicle fits in high-roof lane in case low-lane has no space
+                else if (vehicleLength <= s.highRemainingLength) 
+                {
                     s.highRemainingLength -= vehicleLength;
                 }
-                else {
+                else 
+                {
                     throw std::runtime_error("Insufficient space in both low and high roof lanes");
                 }
             }
+            // Check for availability for special vehicles
             else
             {
                 if (vehicleLength <= s.highRemainingLength)
                 {
                     s.highRemainingLength -= vehicleLength;
                 }
-                else {
+                else 
+                {
                     throw std::runtime_error("Insufficient space in both low and high roof lanes");
                 }
             }
@@ -436,7 +451,8 @@ void createReservationRepeat(char input)
     }   
     else if(input == 'N')
         return;
-    else{
+    else
+    {
         throw std::out_of_range("Input was neither Y or N.");
         return;
     }
@@ -471,7 +487,7 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
         }
     }
     cout << "Vehicle verified\n";
-
+    // Get phone number
     while(true)
     {
         cout << "Enter the customer phone number (Length: 14 char max.):\n";
@@ -486,6 +502,7 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
         }
     }
     cout << "Customer verified\n";
+    // Get length of vehicle
     while(true)
     {
         cout << "Enter the length of the vehicle in meters (Range: 0.1-99.9 max):\n";
@@ -499,6 +516,7 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
             break;
         }
     }
+    // Get height of vehicle
     cout << "Valid length\n";
     while(true)
     {
@@ -521,19 +539,24 @@ void createResAtCheckin(char sailingID[], char vehicleLicence[])
     std::vector<Sailing> sailings;
 
     // Read all sailings into memory
-    while (getNextSailing(s)) {
-        if (strncmp(s.sailingID, sailingID, sizeof(s.sailingID)) == 0) {
+    while (getNextSailing(s)) 
+    {
+        if (strncmp(s.sailingID, sailingID, sizeof(s.sailingID)) == 0) 
+        {
             sailingFound = true;
             
             // Check if vehicle fits in low-roof lane
-            if (vehicleLength <= s.lowRemainingLength) {
+            if (vehicleLength <= s.lowRemainingLength) 
+            {
                 s.lowRemainingLength -= vehicleLength;
             } 
             // Check if vehicle fits in high-roof lane
-            else if (vehicleLength <= s.highRemainingLength) {
+            else if (vehicleLength <= s.highRemainingLength) 
+            {
                 s.highRemainingLength -= vehicleLength;
             }
-            else {
+            else 
+            {
                 throw std::runtime_error("Insufficient space in both low and high roof lanes");
             }
         }
@@ -610,7 +633,8 @@ void deleteReservations(char sailingID[])
         if (std::strcmp(rec.sailingID, sailingID) == 0)
         {
             found = true;  // Mark that we found at least one matching reservation
-        } else
+        } 
+        else
         {
             remaining.push_back(rec);  // Keep reservations that don't match
         }
@@ -630,13 +654,20 @@ void deleteReservations(char sailingID[])
     }
     
 }
-int viewReservations(char sailingID[]) {
+// Function viewReservations with single parameter sailingID
+// Find the number of reservations with the sailing ID
+//----------------------------------------------------------------
+int viewReservations(char sailingID[]) 
+{
 
     reservationReset();
     Reservation r;
     int count = 0;
-    while (getNextReservation(r)) {
-        if (strncmp(r.sailingID, sailingID, sizeof(r.sailingID)) == 0) {
+    // Find all reservations with the sailing ID
+    while (getNextReservation(r)) 
+    {
+        if (strncmp(r.sailingID, sailingID, sizeof(r.sailingID)) == 0) 
+        {
             count++;
         }
     }
