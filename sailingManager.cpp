@@ -403,7 +403,7 @@ void printSailingInfo(char sailingID[])
             // search vehicles.dat for relevant vehicle
             while (getNextVehicle(tempVehicle))
             {
-                if (strncmp(tempVehicle.vehicleLicence, tempRes.vehicleLicence, sizeof(tempVehicle)) == 0)
+                if (strncmp(tempVehicle.vehicleLicence, tempRes.vehicleLicence, sizeof(tempVehicle.vehicleLicence)) == 0)
                 {
                     break;
                 }
