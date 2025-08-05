@@ -5,7 +5,8 @@
 * Filename: vehicle.cpp
 *
 * Revision History:
-* Rev. 2 - 25/08/03 Fixed eof handling by L. Xu
+* Rev. 2 - 25/08/03 Modified by L. Xu
+*        - Fixed eof handling
 * Rev. 1 - 25/07/20 Original by L. Xu
 *
 * Description: Implementation file of the Vehicle module of the Ferry

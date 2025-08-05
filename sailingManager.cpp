@@ -544,6 +544,6 @@ void printSailingReport(char printerName[])
             << std::setw(10) << tempSailing.lowRemainingLength 
             << std::setw(10) << tempSailing.highRemainingLength
             << std::setw(12) << viewReservations(tempSailing.sailingID)
-            << std::setw(12) << percentLenFull;
+            << std::setw(12) << percentLenFull << std:: endl;
     }
 }
